@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "792191508583",
+    "project_id": "belajar2026",
+    "storage_bucket": "belajar2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:792191508583:android:e3a2e15533083ab9b6f4c2",
+        "android_client_info": {
+          "package_name": "com.example.absen01"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOnAmI4MuVIPI8_6whs6NyU1zVhfFjGMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
