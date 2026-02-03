@@ -1,14 +1,16 @@
-import 'package:absen01/controller/analisis_controller.dart';
-import 'package:absen01/controller/irigasi_controller.dart';
-import 'package:absen01/controller/lahan_controller.dart';
-import 'package:absen01/views/analisis_page.dart';
-import 'package:absen01/views/irigasi_page.dart';
-import 'package:absen01/views/lahan_page.dart';
-import 'package:absen01/views/profil_ui.dart';
+import 'package:absen01/views/buku_panduan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:absen01/auth/auth_controller.dart';
-// Import halaman list yang sudah dibuat
+import 'package:absen01/controller/analisis_controller.dart';
+import 'package:absen01/controller/irigasi_controller.dart';
+import 'package:absen01/controller/lahan_controller.dart';
+import 'package:absen01/controller/laporan_controller.dart';
+import 'package:absen01/views/analisis_page.dart';
+import 'package:absen01/views/irigasi_page.dart';
+import 'package:absen01/views/lahan_page.dart';
+import 'package:absen01/views/laporan_page.dart';
+import 'package:absen01/views/profil_ui.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,19 +25,19 @@ class _HomePageState extends State<HomePage> {
   final LahanController lahanController = Get.put(LahanController());
   final IrigasiController irigasiController = Get.put(IrigasiController());
   final AnalisisController analisisController = Get.put(AnalisisController());
+  final LaporanController _laporanController = Get.put(LaporanController());
 
   @override
   Widget build(BuildContext context) {
-    // List halaman untuk navigasi bottom bar
+    // Navigasi halaman
     final List<Widget> _pages = [
       _buildHomeContent(),
-      const Center(child: Text("Halaman Buku / Pelaporan PDF")),
-      ProfilePage(),
+      const PanduanTebuPage(), // Index 1: Halaman Buku
+      ProfilePage(), // Index 2: Halaman Profil
     ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -48,7 +50,6 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
-                letterSpacing: 1.2,
               ),
             ),
           ],
@@ -56,21 +57,16 @@ class _HomePageState extends State<HomePage> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
               colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
             ),
           ),
         ),
       ),
-
       body: _pages[_currentIndex],
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFF2E7D32),
         unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
@@ -93,30 +89,23 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHomeContent() {
     return Stack(
       children: [
-        // Background Watermark SITEBU
         Positioned.fill(
           child: Opacity(
             opacity: 0.1,
             child: Center(
-              child: Image.asset(
-                'assets/logo_sitebu.jpeg',
-                width: MediaQuery.of(context).size.width * 0.8,
-              ),
+              child: Image.asset('assets/logo_sitebu.jpeg', width: 250),
             ),
           ),
         ),
-
         SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting Card
               _buildGreetingCard(),
-
               const SizedBox(height: 30),
               const Text(
-                'Menu Utama SITEBU',
+                'Menu Utama',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -124,8 +113,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // GRID MENU UTAMA
               GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
@@ -136,14 +123,12 @@ class _HomePageState extends State<HomePage> {
                   _MenuItem(
                     icon: Icons.map_rounded,
                     title: 'Lahan Tebu',
-                      onTap: () => Get.to(() => LahanPage()),
-                    
+                    onTap: () => Get.to(() => LahanPage()),
                   ),
                   _MenuItem(
                     icon: Icons.water_drop_rounded,
                     title: 'Irigasi',
-                    // Karena Irigasi butuh ID Lahan, kita arahkan dulu ke List Lahan untuk pilih lahan
-                   onTap: () => Get.to(() => IrigasiPage()),
+                    onTap: () => Get.to(() => IrigasiPage()),
                   ),
                   _MenuItem(
                     icon: Icons.analytics_rounded,
@@ -153,23 +138,9 @@ class _HomePageState extends State<HomePage> {
                   _MenuItem(
                     icon: Icons.history_edu_rounded,
                     title: 'Pelaporan',
-                    onTap:
-                        () => setState(
-                          () => _currentIndex = 1,
-                        ), // Pindah ke tab Buku
+                    onTap: () => Get.to(() => LaporanPage()),
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 30),
-              const Text(
-                'Info Agritech',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const _NewsCard(
-                title: 'Tips Rendemen Tinggi',
-                subtitle: 'Cara mengatur irigasi agar gula tebu maksimal.',
-                icon: Icons.lightbulb,
               ),
             ],
           ),
@@ -182,7 +153,7 @@ class _HomePageState extends State<HomePage> {
     return FutureBuilder<Map<String, dynamic>?>(
       future: _authController.getUserData(),
       builder: (context, snapshot) {
-        String name = snapshot.data?['name'] ?? "Petani SITEBU";
+        String name = snapshot.data?['name'] ?? "petani";
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -190,13 +161,6 @@ class _HomePageState extends State<HomePage> {
             gradient: const LinearGradient(
               colors: [Color(0xFF1B5E20), Color(0xFF388E3C)],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.green.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
           ),
           child: Row(
             children: [
@@ -206,9 +170,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     const Text(
                       'Selamat Datang 👋',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(color: Colors.white70),
                     ),
-                    const SizedBox(height: 6),
                     Text(
                       name,
                       style: const TextStyle(
@@ -229,11 +192,11 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// Komponen Pendukung _MenuItem tetap sama seperti kodinganmu sebelumnya...
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
-
   const _MenuItem({
     required this.icon,
     required this.title,
@@ -242,69 +205,19 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 40, color: const Color(0xFF2E7D32)),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NewsCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-
-  const _NewsCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(top: 10),
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE8F5E9),
-          child: Icon(icon, color: const Color(0xFF2E7D32)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: const Color(0xFF2E7D32)),
+            const SizedBox(height: 8),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right),
       ),
     );
   }

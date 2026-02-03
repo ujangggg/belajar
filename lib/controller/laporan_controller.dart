@@ -1,28 +1,61 @@
+import 'package:absen01/model/model_lahan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
+
 class LaporanController extends GetxController {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<void> generateMonthlyPDF(String lahanId, int bulan, int tahun) async {
-    // 1. Ambil Data Lahan
-    var lahanDoc = await _firestore.collection('lahan').doc(lahanId).get();
-    var dataLahan = lahanDoc.data();
+  RxList<Map<String, dynamic>> laporanList = <Map<String, dynamic>>[].obs;
+  RxBool isLoading = false.obs;
 
-    // 2. Ambil Data Irigasi bulan ini
-    var irigasiSnap = await _firestore
-        .collection('irigasi')
-        .where('lahanId', isEqualTo: lahanId)
-        // Tambahkan filter tanggal di sini (startOfMonth s/d endOfMonth)
-        .get();
+  @override
+  void onInit() {
+    super.onInit();
+    generateLaporan();
+  }
 
-    // 3. Ambil Data Analisis bulan ini
-    var analisisSnap = await _firestore
-        .collection('analisis')
-        .where('lahanId', isEqualTo: lahanId)
-        .get();
+  Future<void> generateLaporan() async {
+    isLoading.value = true;
+    laporanList.clear();
 
-    // LOGIKA PDF: Masukkan dataLahan, irigasiSnap, dan analisisSnap ke paket PDF
-    print("Memproses PDF untuk ${dataLahan?['namaLahan']} periode $bulan/$tahun");
+    final lahanSnapshot = await _db.collection('lahan').get();
+
+    for (var lahanDoc in lahanSnapshot.docs) {
+      final lahan = LahanModel.fromMap(lahanDoc.id, lahanDoc.data());
+
+      // Ambil analisis
+      final analisisDoc =
+          await _db.collection('analisis').doc(lahan.id).get();
+
+      // Ambil irigasi
+      final irigasiSnapshot = await _db
+          .collection('irigasi')
+          .where('lahanId', isEqualTo: lahan.id)
+          .get();
+
+      double totalAir = 0;
+      for (var i in irigasiSnapshot.docs) {
+        totalAir += (i['volumeAir'] as num).toDouble();
+      }
+
+      laporanList.add({
+        'namaLahan': lahan.namaLahan,
+        'luas': lahan.luas,
+        'varietas': lahan.varietas,
+        'totalAir': totalAir,
+        'status': analisisDoc.exists
+            ? analisisDoc['statusTanaman']
+            : 'Belum dianalisis',
+        'umur': analisisDoc.exists
+            ? analisisDoc['umurTanamHari']
+            : 0,
+        'rekomendasi': analisisDoc.exists
+            ? analisisDoc['rekomendasi']
+            : '-',
+      });
+    }
+
+    isLoading.value = false;
   }
 }

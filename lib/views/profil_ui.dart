@@ -12,20 +12,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-      appBar: AppBar(
-        title: const Text(
-          'Profil SITEBU',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
-            ),
-          ),
-        ),
-      ),
+
       body: FutureBuilder<Map<String, dynamic>?>(
         future: authController.getUserData(),
         builder: (context, snapshot) {

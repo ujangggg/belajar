@@ -4,6 +4,7 @@ import 'package:absen01/auth/register.dart';
 import 'package:absen01/controller/analisis_controller.dart';
 import 'package:absen01/controller/irigasi_controller.dart';
 import 'package:absen01/controller/lahan_controller.dart';
+import 'package:absen01/controller/laporan_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,7 @@ void main() async {
   Get.put(LahanController());
   Get.put(IrigasiController());
   Get.put(AnalisisController());
+  Get.put(LaporanController());
   // Jika ada AuthController, masukkan juga
   // Get.put(AuthController()) // inisialisasi controller
   runApp(const MyApp());
