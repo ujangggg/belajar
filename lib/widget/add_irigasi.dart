@@ -1,3 +1,4 @@
+import 'package:absen01/auth/auth_controller.dart';
 import 'package:absen01/logo.dart';
 import 'package:absen01/model/model_irigasi.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ class AddIrigasi extends StatelessWidget {
 
   final IrigasiController irigasiC = Get.find();
   final LahanController lahanC = Get.find();
+  final AuthController authC = Get.find(); // Akses Auth
 
   final volCtrl = TextEditingController();
   final durasiCtrl = TextEditingController();
@@ -20,7 +22,6 @@ class AddIrigasi extends StatelessWidget {
   final RxString selectedFase = 'Pertumbuhan'.obs;
   final RxString statusOtomatis = '-'.obs;
 
-  // Fungsi Helper untuk menyamakan Dekorasi Input (Border Standar/Tipis)
   InputDecoration _inputStyle(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -32,7 +33,7 @@ class AddIrigasi extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1B5E20)),
+        borderSide: const BorderSide(color: Color(0xFF1B5E20), width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -48,7 +49,6 @@ class AddIrigasi extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 1. PILIH LAHAN
             Obx(() => DropdownButtonFormField<String>(
                   isExpanded: true,
                   decoration: _inputStyle("Pilih Lahan", Icons.map),
@@ -63,7 +63,6 @@ class AddIrigasi extends StatelessWidget {
                 )),
             const SizedBox(height: 16),
 
-            /// 2. INPUT KELEMBABAN
             TextField(
               controller: humidCtrl,
               keyboardType: TextInputType.number,
@@ -87,7 +86,6 @@ class AddIrigasi extends StatelessWidget {
                   ),
                 )),
 
-            /// 3. FASE PENANAMAN
             DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: _inputStyle("Fase Penanaman", Icons.history),
@@ -99,7 +97,6 @@ class AddIrigasi extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 4. VOLUME AIR
             TextField(
               controller: volCtrl,
               keyboardType: TextInputType.number,
@@ -107,7 +104,6 @@ class AddIrigasi extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 5. DURASI
             TextField(
               controller: durasiCtrl,
               keyboardType: TextInputType.number,
@@ -115,7 +111,6 @@ class AddIrigasi extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 6. CATATAN
             TextField(
               controller: catatanCtrl,
               maxLines: 2,
@@ -124,31 +119,36 @@ class AddIrigasi extends StatelessWidget {
             
             const SizedBox(height: 32),
 
-            /// TOMBOL SIMPAN INSTAN
             UiHelper.buildButton(
               text: "Simpan Data Irigasi",
               color: const Color(0xFF1B5E20),
               icon: Icons.save,
               onPressed: () {
-                // Buat Model (Data diambil apa adanya tanpa validasi)
-                final irigasi = IrigasiModel(
-                  id: '',
-                  lahanId: selectedLahanId.value,
-                  tanggal: DateTime.now(),
-                  metode: 'Manual',
-                  volumeAir: double.tryParse(volCtrl.text) ?? 0.0,
-                  durasi: int.tryParse(durasiCtrl.text) ?? 0,
-                  kelembabanTanah: double.tryParse(humidCtrl.text) ?? 0.0,
-                  kondisiTanah: statusOtomatis.value,
-                  faseTanam: selectedFase.value,
-                  catatan: catatanCtrl.text,
-                );
+                final String? currentUid = authC.firebaseUser.value?.uid;
 
-                // Jalankan simpan di background (Tanpa await)
-                irigasiC.addIrigasi(irigasi);
+                if (selectedLahanId.value.isEmpty) {
+                  Get.snackbar("Peringatan", "Pilih lahan terlebih dahulu");
+                  return;
+                }
 
-                // LANGSUNG BALIK ke halaman sebelumnya (Instan)
-                Get.back();
+                if (currentUid != null) {
+                  final irigasi = IrigasiModel(
+                    id: '',
+                    uid: currentUid, // UID DISIMPAN
+                    lahanId: selectedLahanId.value,
+                    tanggal: DateTime.now(),
+                    metode: 'Manual',
+                    volumeAir: double.tryParse(volCtrl.text) ?? 0.0,
+                    durasi: int.tryParse(durasiCtrl.text) ?? 0,
+                    kelembabanTanah: double.tryParse(humidCtrl.text) ?? 0.0,
+                    kondisiTanah: statusOtomatis.value,
+                    faseTanam: selectedFase.value,
+                    catatan: catatanCtrl.text,
+                  );
+
+                  irigasiC.addIrigasi(irigasi);
+                  Get.back();
+                }
               },
             ),
           ],
@@ -156,4 +156,4 @@ class AddIrigasi extends StatelessWidget {
       ),
     );
   }
-} 
+}

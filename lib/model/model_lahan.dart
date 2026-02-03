@@ -1,16 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class LahanModel {
   final String id;
+  final String uid; 
   final String namaLahan;
   final String lokasi;
   final double luas;
   final String varietas;
   final DateTime tanggalTanam;
   final String status;
-  final String jenisTanah; // TAMBAHAN BARU
-  final String? idSensor;  // TAMBAHAN BARU (Bisa null jika belum ada alat)
+  final String jenisTanah;
+  final String? idSensor;
 
   LahanModel({
     required this.id,
+    required this.uid,
     required this.namaLahan,
     required this.lokasi,
     required this.luas,
@@ -22,47 +26,39 @@ class LahanModel {
   });
 
   factory LahanModel.fromMap(String id, Map<String, dynamic> map) {
+    // Fungsi internal untuk konversi tanggal yang tangguh
+    DateTime parseDate(dynamic date) {
+      if (date == null) return DateTime.now();
+      if (date is Timestamp) return date.toDate();
+      if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
+      return DateTime.now();
+    }
+
     return LahanModel(
       id: id,
+      uid: map['uid'] ?? '',
       namaLahan: map['namaLahan'] ?? 'Tanpa Nama',
       lokasi: map['lokasi'] ?? '-',
       luas: (map['luas'] ?? 0).toDouble(),
       varietas: map['varietas'] ?? '-',
-      tanggalTanam: map['tanggalTanam'] != null
-          ? DateTime.parse(map['tanggalTanam'])
-          : DateTime.now(),
+      tanggalTanam: parseDate(map['tanggalTanam']),
       status: map['status'] ?? 'aktif',
-      jenisTanah: map['jenisTanah'] ?? 'Lempung', // Ambil dari Firebase
-      idSensor: map['idSensor'], // Ambil dari Firebase
+      jenisTanah: map['jenisTanah'] ?? 'Lempung',
+      idSensor: map['idSensor'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'uid': uid,
       'namaLahan': namaLahan,
       'lokasi': lokasi,
       'luas': luas,
       'varietas': varietas,
-      'tanggalTanam': tanggalTanam.toIso8601String(),
+      'tanggalTanam': Timestamp.fromDate(tanggalTanam), // Simpan sebagai Timestamp
       'status': status,
-      'jenisTanah': jenisTanah, // Simpan ke Firebase
-      'idSensor': idSensor,    // Simpan ke Firebase
+      'jenisTanah': jenisTanah,
+      'idSensor': idSensor,
     };
-  }
-
-  // --- LOGIKA OTOMATIS BERDASARKAN JURNAL MONTABU ---
-
-  /// Menghitung usia tanaman dalam bulan secara real-time
-  int get usiaBulan {
-    final diff = DateTime.now().difference(tanggalTanam).inDays;
-    return (diff / 30).floor();
-  }
-
-  /// Menentukan fase secara otomatis (Penting untuk rekomendasi air)
-  String get fasePertumbuhan {
-    int bulan = usiaBulan;
-    if (bulan <= 4) return "Fase Awal (0-4 bln)";
-    if (bulan <= 9) return "Fase Pertumbuhan";
-    return "Fase Kemasakan (Kritis Rendemen)";
   }
 }

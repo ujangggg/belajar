@@ -1,17 +1,19 @@
 class IrigasiModel {
   final String id;
+  final String uid; // TAMBAHAN: Untuk filter per akun
   final String lahanId;
   final DateTime tanggal;
-  final String metode; // Manual atau Otomatis (berdasarkan jurnal)
+  final String metode; 
   final double volumeAir;
-  final int durasi; // Dalam menit
-  final double kelembabanTanah; // TAMBAHAN: Data persentase % dari sensor (Jurnal: 0-100%)
-  final String kondisiTanah; // Otomatis terisi (Kering, Optimal, Basah)
-  final String faseTanam; // TAMBAHAN: Fase awal, pertumbuhan, atau kemasakan
+  final int durasi; 
+  final double kelembabanTanah; 
+  final String kondisiTanah; 
+  final String faseTanam; 
   final String? catatan;
 
   IrigasiModel({
     required this.id,
+    required this.uid, // Required baru
     required this.lahanId,
     required this.tanggal,
     required this.metode,
@@ -26,6 +28,7 @@ class IrigasiModel {
   factory IrigasiModel.fromMap(String id, Map<String, dynamic> map) {
     return IrigasiModel(
       id: id,
+      uid: map['uid'] ?? '', // Ambil UID
       lahanId: map['lahanId'] ?? '',
       tanggal: map['tanggal'] != null 
           ? DateTime.parse(map['tanggal']) 
@@ -42,6 +45,7 @@ class IrigasiModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'uid': uid, // Simpan UID
       'lahanId': lahanId,
       'tanggal': tanggal.toIso8601String(),
       'metode': metode,
@@ -54,7 +58,6 @@ class IrigasiModel {
     };
   }
 
-  // Tambahan helper fungsi untuk menentukan status berdasarkan Jurnal MONTABU
   static String hitungKondisi(double moisture) {
     if (moisture < 16) return "Kering";
     if (moisture >= 70 && moisture <= 80) return "Optimal";

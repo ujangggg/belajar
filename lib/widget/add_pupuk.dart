@@ -1,3 +1,4 @@
+import 'package:absen01/auth/auth_controller.dart';
 import 'package:absen01/logo.dart';
 import 'package:absen01/model/model_pupuk.dart';
 import 'package:flutter/material.dart';
@@ -10,17 +11,16 @@ class AddPemupukan extends StatelessWidget {
 
   final PupukController pupukC = Get.find();
   final LahanController lahanC = Get.find();
+  final AuthController authC = Get.find();
 
   final jumlahCtrl = TextEditingController();
   final catatanCtrl = TextEditingController();
 
-  // 1. Pastikan Nilai Awal ini SAMA PERSIS dengan salah satu item di list bawah
   final RxString selectedLahanId = ''.obs;
   final RxString selectedJenisPupuk = 'Urea'.obs;
   final RxString selectedMetode = 'Tabur'.obs;
   final RxString selectedFase = 'Pertumbuhan'.obs; 
 
-  // Helper Dekorasi Input (Border Standar/Tipis)
   InputDecoration _inputStyle(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -32,7 +32,7 @@ class AddPemupukan extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1B5E20)),
+        borderSide: const BorderSide(color: Color(0xFF1B5E20), width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -48,7 +48,6 @@ class AddPemupukan extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// 1. PILIH LAHAN
             Obx(() => DropdownButtonFormField<String>(
                   isExpanded: true,
                   decoration: _inputStyle("Pilih Lahan", Icons.map),
@@ -63,7 +62,6 @@ class AddPemupukan extends StatelessWidget {
                 )),
             const SizedBox(height: 16),
 
-            /// 2. JENIS PUPUK
             DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: _inputStyle("Jenis Pupuk", Icons.science),
@@ -75,7 +73,6 @@ class AddPemupukan extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 3. DOSIS / JUMLAH
             TextField(
               controller: jumlahCtrl,
               keyboardType: TextInputType.number,
@@ -83,7 +80,6 @@ class AddPemupukan extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 4. METODE APLIKASI
             DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: _inputStyle("Metode Aplikasi", Icons.format_color_fill),
@@ -95,12 +91,10 @@ class AddPemupukan extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 5. FASE TANAM (DI SINI MASALAHNYA TADI)
             DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: _inputStyle("Fase Saat Ini", Icons.psychology),
               value: selectedFase.value,
-              // List ini sekarang SAMA PERSIS dengan nilai default di atas
               items: ["Awal", "Pertumbuhan", "Kemasakan"]
                   .map((f) => DropdownMenuItem(value: f, child: Text(f)))
                   .toList(),
@@ -108,34 +102,41 @@ class AddPemupukan extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            /// 6. CATATAN
             TextField(
               controller: catatanCtrl,
               maxLines: 2,
               decoration: _inputStyle("Catatan (Misal: Merk Pupuk)", Icons.notes),
             ),
-            
             const SizedBox(height: 32),
 
-            /// TOMBOL SIMPAN INSTAN
             UiHelper.buildButton(
               text: "Simpan Data Pupuk",
               color: const Color(0xFF1B5E20),
               icon: Icons.check_circle,
               onPressed: () {
-                final pupuk = PupukModel(
-                  id: '',
-                  lahanId: selectedLahanId.value,
-                  tanggal: DateTime.now(),
-                  jenisPupuk: selectedJenisPupuk.value,
-                  jumlah: double.tryParse(jumlahCtrl.text) ?? 0.0,
-                  metode: selectedMetode.value,
-                  faseTanam: selectedFase.value,
-                  catatan: catatanCtrl.text,
-                );
+                final String? currentUid = authC.firebaseUser.value?.uid;
 
-                pupukC.addPupuk(pupuk);
-                Get.back();
+                if (selectedLahanId.value.isEmpty) {
+                  Get.snackbar("Peringatan", "Pilih lahan terlebih dahulu");
+                  return;
+                }
+
+                if (currentUid != null) {
+                  final pupuk = PupukModel(
+                    id: '',
+                    uid: currentUid, // UID BERHASIL DICATAT
+                    lahanId: selectedLahanId.value,
+                    tanggal: DateTime.now(),
+                    jenisPupuk: selectedJenisPupuk.value,
+                    jumlah: double.tryParse(jumlahCtrl.text) ?? 0.0,
+                    metode: selectedMetode.value,
+                    faseTanam: selectedFase.value,
+                    catatan: catatanCtrl.text,
+                  );
+
+                  pupukC.addPupuk(pupuk);
+                  Get.back();
+                }
               },
             ),
           ],

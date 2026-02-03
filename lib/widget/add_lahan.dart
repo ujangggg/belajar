@@ -1,4 +1,5 @@
-import 'package:absen01/logo.dart';
+import 'package:absen01/auth/auth_controller.dart';
+import 'package:absen01/logo.dart'; // Asumsi ini file UI Helper kamu
 import 'package:absen01/model/model_lahan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ class AddLahan extends StatefulWidget {
 
 class _AddLahanState extends State<AddLahan> {
   final LahanController lahanC = Get.find();
+  final AuthController authC = Get.find(); // Tambahkan akses ke AuthController
 
   final nameCtrl = TextEditingController();
   final luasCtrl = TextEditingController();
@@ -24,7 +26,7 @@ class _AddLahanState extends State<AddLahan> {
   String selectedJenisTanah = 'Lempung';
   String selectedStatus = 'Aktif';
 
-  // Helper desain dengan garis border standar (tipis)
+  // Desain input field
   InputDecoration _inputStyle(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -32,11 +34,11 @@ class _AddLahanState extends State<AddLahan> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade400), // Garis standar
+        borderSide: BorderSide(color: Colors.grey.shade400),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1B5E20)),
+        borderSide: const BorderSide(color: Color(0xFF1B5E20), width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -72,21 +74,38 @@ class _AddLahanState extends State<AddLahan> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// INPUT FIELD
+            const Text(
+              "Informasi Lahan",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            
             TextField(controller: nameCtrl, decoration: _inputStyle("Nama Lahan", Icons.landscape)),
             const SizedBox(height: 16),
+            
             TextField(controller: lokasiCtrl, decoration: _inputStyle("Lokasi Lahan", Icons.location_on)),
             const SizedBox(height: 16),
+            
             Row(
               children: [
-                Expanded(child: TextField(controller: luasCtrl, keyboardType: TextInputType.number, decoration: _inputStyle("Luas (Ha)", Icons.square_foot))),
+                Expanded(
+                  child: TextField(
+                    controller: luasCtrl, 
+                    keyboardType: TextInputType.number, 
+                    decoration: _inputStyle("Luas (Ha)", Icons.square_foot),
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: TextField(controller: varietasCtrl, decoration: _inputStyle("Varietas", Icons.eco))),
+                Expanded(
+                  child: TextField(
+                    controller: varietasCtrl, 
+                    decoration: _inputStyle("Varietas", Icons.eco),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
             
-            /// JENIS TANAH
             DropdownButtonFormField<String>(
               isExpanded: true,
               decoration: _inputStyle("Jenis Tanah", Icons.layers),
@@ -98,11 +117,12 @@ class _AddLahanState extends State<AddLahan> {
             ),
             const SizedBox(height: 16),
             
-            /// ID SENSOR
-            TextField(controller: sensorCtrl, decoration: _inputStyle("ID Sensor (Opsional)", Icons.developer_board)),
+            TextField(
+              controller: sensorCtrl, 
+              decoration: _inputStyle("ID Sensor (Opsional)", Icons.developer_board),
+            ),
             const SizedBox(height: 16),
             
-            /// TANGGAL TANAM
             InkWell(
               onTap: () => _selectDate(context),
               child: Container(
@@ -119,8 +139,10 @@ class _AddLahanState extends State<AddLahan> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("Tanggal Tanam", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        Text("${selectedDate.day} - ${selectedDate.month} - ${selectedDate.year}", 
-                             style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(
+                          "${selectedDate.day} - ${selectedDate.month} - ${selectedDate.year}", 
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                     const Spacer(),
@@ -131,30 +153,46 @@ class _AddLahanState extends State<AddLahan> {
             ),
             const SizedBox(height: 32),
 
-            /// TOMBOL SIMPAN INSTAN
+            // TOMBOL SIMPAN
             UiHelper.buildButton(
               text: "Simpan Lahan",
               color: const Color(0xFF1B5E20),
               icon: Icons.save,
               onPressed: () {
-                // Buat Model
-                final lahan = LahanModel(
-                  id: '',
-                  namaLahan: nameCtrl.text,
-                  lokasi: lokasiCtrl.text,
-                  luas: double.tryParse(luasCtrl.text) ?? 0.0,
-                  varietas: varietasCtrl.text,
-                  tanggalTanam: selectedDate,
-                  status: selectedStatus,
-                  jenisTanah: selectedJenisTanah,
-                  idSensor: sensorCtrl.text.isEmpty ? null : sensorCtrl.text,
-                );
+                // VALIDASI SEDERHANA
+                if (nameCtrl.text.isEmpty || lokasiCtrl.text.isEmpty) {
+                  Get.snackbar("Peringatan", "Nama dan Lokasi wajib diisi",
+                      backgroundColor: Colors.orange, colorText: Colors.white);
+                  return;
+                }
 
-                // Jalankan simpan di background (tanpa await)
-                lahanC.addLahan(lahan);
+                // AMBIL UID DARI AUTH CONTROLLER
+                final String? currentUid = authC.firebaseUser.value?.uid;
 
-                // Langsung kembali ke halaman sebelumnya
-                Get.back();
+                if (currentUid != null) {
+                  // BUAT MODEL DENGAN UID USER
+                  final lahan = LahanModel(
+                    id: '', // Diisi otomatis oleh Firestore add()
+                    uid: currentUid, // ID pemilik data
+                    namaLahan: nameCtrl.text,
+                    lokasi: lokasiCtrl.text,
+                    luas: double.tryParse(luasCtrl.text) ?? 0.0,
+                    varietas: varietasCtrl.text,
+                    tanggalTanam: selectedDate,
+                    status: selectedStatus,
+                    jenisTanah: selectedJenisTanah,
+                    idSensor: sensorCtrl.text.isEmpty ? null : sensorCtrl.text,
+                  );
+
+                  // JALANKAN PROSES SIMPAN
+                  lahanC.addLahan(lahan);
+
+                  // KEMBALI KE HALAMAN SEBELUMNYA
+                  Get.back();
+                } else {
+                  Get.snackbar("Error", "Sesi login tidak ditemukan",
+                      backgroundColor: Colors.red, colorText: Colors.white);
+                }
               },
             ),
           ],

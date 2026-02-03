@@ -1,3 +1,4 @@
+import 'package:absen01/widget/edit_profil.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:absen01/auth/auth_controller.dart'; // Sesuaikan path ini
@@ -38,13 +39,17 @@ class ProfilePage extends StatelessWidget {
                           radius: 55,
                           backgroundColor: const Color(0xFF2E7D32),
                           child: CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Colors.white,
-                            // Pakai icon eco agar nyambung sama logo SITEBU
-                            child: Icon(
-                              Icons.eco,
-                              size: 50,
-                              color: Colors.green[800],
+                            radius: 55,
+                            backgroundColor: const Color(0xFF2E7D32),
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.white,
+                              // Menggunakan AssetImage untuk memanggil logo SITEBU
+                              backgroundImage: const AssetImage(
+                                'assets/logo_sitebu.jpeg',
+                              ),
+                              // backgroundImage otomatis menutupi CircleAvatar,
+                              // jadi Icon di child sebelumnya bisa dihapus.
                             ),
                           ),
                         ),
@@ -84,7 +89,7 @@ class ProfilePage extends StatelessWidget {
                       _buildMenuTile(
                         Icons.person_outline,
                         "Edit Profil",
-                        () {},
+                        () => Get.to(() => EditProfilPage()),
                       ),
                       _buildMenuTile(Icons.history, "Riwayat Aktivitas", () {}),
                       const Divider(height: 30),
