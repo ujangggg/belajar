@@ -1,5 +1,6 @@
 import 'package:absen01/views/buku_panduan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:absen01/auth/auth_controller.dart';
 import 'package:absen01/controller/pupuk_controller.dart';
@@ -21,67 +22,108 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  DateTime? _lastPressedAt; // Untuk menyimpan waktu ketukan terakhir
+
   final AuthController _authController = Get.find<AuthController>();
-  final LahanController lahanController = Get.put(LahanController());
-  final IrigasiController irigasiController = Get.put(IrigasiController());
-  final PupukController pupukController = Get.put(PupukController());
-  final LaporanController _laporanController = Get.put(LaporanController());
+  final LahanController lahanController = Get.find<LahanController>();
+  final IrigasiController irigasiController = Get.find<IrigasiController>();
+  final PupukController pupukController = Get.find<PupukController>();
+  final LaporanController _laporanController = Get.find<LaporanController>();
 
   @override
   Widget build(BuildContext context) {
-    // Navigasi halaman
     final List<Widget> _pages = [
       _buildHomeContent(),
-      const PanduanTebuPage(), // Index 1: Halaman Buku
-      ProfilePage(), // Index 2: Halaman Profil
+      const PanduanTebuPage(),
+      ProfilePage(),
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F5),
-      appBar: AppBar(
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            Image.asset('assets/logo_sitebu.jpeg', height: 35),
-            const SizedBox(width: 10),
-            const Text(
-              'SITEBU',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        final now = DateTime.now();
+        // Jika ketukan kedua dilakukan dalam kurang dari 2 detik
+        if (_lastPressedAt == null ||
+            now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+          _lastPressedAt = now;
+
+          // Munculkan notifikasi hitam (Snackbar bergaya Toast)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Ketuk lagi untuk keluar',
+                textAlign: TextAlign.left, // Teks rata kiri
+                style: TextStyle(color: Colors.white),
               ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.black.withOpacity(0.8),
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(
+                20,
+              ), // Memberi jarak dari pinggir layar agar tidak nempel banget
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  10,
+                ), // Radius lebih kecil biar terlihat lebih memanjang dan formal
+              ),
+              // Properti 'width' dihapus agar SnackBar otomatis memanjang mengikuti lebar layar
+            ),
+          );
+          return;
+        }
+
+        // Jika sudah ketukan kedua, tutup aplikasi
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6F5),
+        appBar: AppBar(
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: Row(
+            children: [
+              Image.asset('assets/logo_sitebu.jpeg', height: 35),
+              const SizedBox(width: 10),
+              const Text(
+                'SITEBU',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+              ),
+            ),
+          ),
+        ),
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          selectedItemColor: const Color(0xFF2E7D32),
+          unselectedItemColor: Colors.grey,
+          onTap: (index) => setState(() => _currentIndex = index),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.auto_stories_outlined),
+              label: 'Buku',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: 'Profil',
             ),
           ],
         ),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
-            ),
-          ),
-        ),
-      ),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFF2E7D32),
-        unselectedItemColor: Colors.grey,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_stories_outlined),
-            label: 'Buku',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profil',
-          ),
-        ],
       ),
     );
   }
@@ -192,7 +234,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Komponen Pendukung _MenuItem tetap sama seperti kodinganmu sebelumnya...
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -206,6 +247,7 @@ class _MenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: onTap,
@@ -215,7 +257,11 @@ class _MenuItem extends StatelessWidget {
           children: [
             Icon(icon, size: 40, color: const Color(0xFF2E7D32)),
             const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
           ],
         ),
       ),
