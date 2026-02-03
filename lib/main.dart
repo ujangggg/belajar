@@ -1,7 +1,7 @@
 import 'package:absen01/auth/auth_controller.dart';
 import 'package:absen01/auth/login.dart';
 import 'package:absen01/auth/register.dart';
-import 'package:absen01/controller/analisis_controller.dart';
+import 'package:absen01/controller/pupuk_controller.dart';
 import 'package:absen01/controller/irigasi_controller.dart';
 import 'package:absen01/controller/lahan_controller.dart';
 import 'package:absen01/controller/laporan_controller.dart';
@@ -17,10 +17,9 @@ void main() async {
   Get.put(AuthController());
   Get.put(LahanController());
   Get.put(IrigasiController());
-  Get.put(AnalisisController());
+  Get.put(PupukController());
   Get.put(LaporanController());
-  // Jika ada AuthController, masukkan juga
-  // Get.put(AuthController()) // inisialisasi controller
+
   runApp(const MyApp());
 }
 

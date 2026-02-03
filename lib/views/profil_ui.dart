@@ -87,7 +87,6 @@ class ProfilePage extends StatelessWidget {
                         () {},
                       ),
                       _buildMenuTile(Icons.history, "Riwayat Aktivitas", () {}),
-                      _buildMenuTile(Icons.security, "Keamanan Akun", () {}),
                       const Divider(height: 30),
                       _buildMenuTile(
                         Icons.logout_rounded,

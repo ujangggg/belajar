@@ -2,11 +2,11 @@ import 'package:absen01/views/buku_panduan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:absen01/auth/auth_controller.dart';
-import 'package:absen01/controller/analisis_controller.dart';
+import 'package:absen01/controller/pupuk_controller.dart';
 import 'package:absen01/controller/irigasi_controller.dart';
 import 'package:absen01/controller/lahan_controller.dart';
 import 'package:absen01/controller/laporan_controller.dart';
-import 'package:absen01/views/analisis_page.dart';
+import 'package:absen01/views/pupuk_page.dart';
 import 'package:absen01/views/irigasi_page.dart';
 import 'package:absen01/views/lahan_page.dart';
 import 'package:absen01/views/laporan_page.dart';
@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   final AuthController _authController = Get.find<AuthController>();
   final LahanController lahanController = Get.put(LahanController());
   final IrigasiController irigasiController = Get.put(IrigasiController());
-  final AnalisisController analisisController = Get.put(AnalisisController());
+  final PupukController pupukController = Get.put(PupukController());
   final LaporanController _laporanController = Get.put(LaporanController());
 
   @override
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _MenuItem(
-                    icon: Icons.map_rounded,
+                    icon: Icons.landscape_rounded,
                     title: 'Lahan Tebu',
                     onTap: () => Get.to(() => LahanPage()),
                   ),
@@ -131,12 +131,12 @@ class _HomePageState extends State<HomePage> {
                     onTap: () => Get.to(() => IrigasiPage()),
                   ),
                   _MenuItem(
-                    icon: Icons.analytics_rounded,
-                    title: 'Analisis Panen',
-                    onTap: () => Get.to(() => AnalisisPage()),
+                    icon: Icons.agriculture_rounded,
+                    title: 'Pemupukan',
+                    onTap: () => Get.to(() => PemupukanPage()),
                   ),
                   _MenuItem(
-                    icon: Icons.history_edu_rounded,
+                    icon: Icons.description_rounded,
                     title: 'Pelaporan',
                     onTap: () => Get.to(() => LaporanPage()),
                   ),
