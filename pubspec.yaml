@@ -43,6 +43,8 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   path_provider: ^2.1.5
+  flutter_native_splash: ^2.4.6
+
 
 dev_dependencies:
   flutter_test:
@@ -96,3 +98,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_native_splash:
+  color: "#1B5E20" # Warna hijau gelap khas SITEBU
+  image: assets/logo_sitebu.jpeg # Pastikan path logo kamu benar
+  android_12:
+    image: assets/logo_sitebu.jpeg
+    color: "#1B5E20"
+  fullscreen: true

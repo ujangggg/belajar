@@ -1,4 +1,3 @@
-import 'package:absen01/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'auth_controller.dart';
@@ -17,14 +16,13 @@ class _LoginPageState extends State<LoginPage> {
   final AuthController _authController = Get.find();
 
   final RxBool isLoading = false.obs;
-  final RxnString errorMessage = RxnString(); // ⚡ RxnString untuk nullable
+  final RxnString errorMessage = RxnString();
 
   bool validate() {
     final email = emailController.text.trim();
     final pass = passwordController.text.trim();
 
-    if (email.isEmpty ||
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+    if (email.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       errorMessage.value = 'Email tidak valid';
       return false;
     }
@@ -46,7 +44,6 @@ class _LoginPageState extends State<LoginPage> {
         emailController.text.trim(),
         passwordController.text.trim(),
       );
-      // GetX navigation otomatis ke HomePage karena Obx di Root
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
@@ -129,10 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Error message
                         Obx(() {
-                          if (errorMessage.value == null)
-                            return const SizedBox.shrink();
+                          if (errorMessage.value == null) return const SizedBox.shrink();
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Text(
@@ -142,7 +137,6 @@ class _LoginPageState extends State<LoginPage> {
                           );
                         }),
                         const SizedBox(height: 8),
-                        // Login button
                         Obx(() {
                           return SizedBox(
                             width: double.infinity,
@@ -150,22 +144,17 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: isLoading.value ? null : login,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF1B5E20),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
-                              child:
-                                  isLoading.value
-                                      ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                      : const Text(
-                                        'MASUK',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                              child: isLoading.value
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      'MASUK',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                             ),
                           );
                         }),

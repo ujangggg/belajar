@@ -1,4 +1,5 @@
 import 'package:absen01/home.dart';
+import 'package:absen01/admin/admin_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,23 +14,42 @@ class AuthController extends GetxController {
   final Rxn<User> firebaseUser = Rxn<User>();
   final RxBool isLoading = false.obs;
   final RxnString errorMessage = RxnString();
+  
+  final RxString userRole = "user".obs;
 
   @override
   void onInit() {
-    super.onInit();
+    super.onInit(); 
     firebaseUser.bindStream(_auth.authStateChanges());
     ever(firebaseUser, _setInitialScreen);
   }
 
-  void _setInitialScreen(User? user) {
+  void _setInitialScreen(User? user) async {
     if (user == null) {
       Get.offAllNamed('/login');
     } else {
-      Get.offAll(() => const HomePage());
+      try {
+        DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+        
+        if (doc.exists) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          String role = data['role'] ?? "user"; 
+          userRole.value = role;
+
+          if (role == "admin") {
+            Get.offAll(() => const AdminPage());
+          } else {
+            Get.offAll(() => const HomePage());
+          }
+        } else {
+          Get.offAll(() => const HomePage());
+        }
+      } catch (e) {
+        Get.offAll(() => const HomePage());
+      }
     }
   }
 
-  /// REGISTER
   Future<void> register(String name, String email, String password) async {
     try {
       isLoading.value = true;
@@ -46,6 +66,7 @@ class AuthController extends GetxController {
           'uid': user.uid,
           'name': name,
           'email': email,
+          'role': 'user',
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
@@ -57,12 +78,10 @@ class AuthController extends GetxController {
     }
   }
 
-  /// LOGIN
   Future<void> login(String email, String password) async {
     try {
       isLoading.value = true;
       errorMessage.value = null;
-
       await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       errorMessage.value = e.message;
@@ -72,7 +91,6 @@ class AuthController extends GetxController {
     }
   }
 
-  /// UPGRADE: Fungsi Edit Profil (Tetap ada tanpa variabel Rx)
   Future<void> updateProfile(String newName) async {
     try {
       if (firebaseUser.value == null) return;
@@ -88,8 +106,6 @@ class AuthController extends GetxController {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
-
-      // Update tampilan secara manual setelah sukses
       update();
     } catch (e) {
       Get.snackbar("Gagal", e.toString(), backgroundColor: Colors.red);
@@ -98,12 +114,27 @@ class AuthController extends GetxController {
     }
   }
 
-  /// LOGOUT
+  /// LOGOUT DENGAN NOTIFIKASI
   Future<void> logout() async {
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+      userRole.value = ""; 
+      
+      Get.snackbar(
+        "Logout Berhasil",
+        "Anda telah keluar dari akun SITEBU",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF1B5E20),
+        colorText: Colors.white,
+        icon: const Icon(Icons.check_circle, color: Colors.white),
+        margin: const EdgeInsets.all(15),
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Gagal logout: $e");
+    }
   }
 
-  /// Fungsi Ambil Data User (Digunakan oleh FutureBuilder)
   Future<Map<String, dynamic>?> getUserData() async {
     if (firebaseUser.value == null) return null;
     DocumentSnapshot doc =

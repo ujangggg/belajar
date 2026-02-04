@@ -16,11 +16,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final AuthController _authController = Get.find();
 
-  // Reactive loading & error
   final RxBool isLoading = false.obs;
-  final RxnString errorMessage = RxnString(); // ⚡ RxnString untuk nullable
+  final RxnString errorMessage = RxnString();
 
-  /// VALIDASI INPUT
   bool validate() {
     final name = namaController.text.trim();
     final email = emailController.text.trim();
@@ -30,8 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
       errorMessage.value = 'Nama tidak boleh kosong';
       return false;
     }
-    if (email.isEmpty ||
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+    if (email.isEmpty || !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       errorMessage.value = 'Email tidak valid';
       return false;
     }
@@ -42,7 +39,6 @@ class _RegisterPageState extends State<RegisterPage> {
     return true;
   }
 
-  /// REGISTER
   Future<void> register() async {
     if (!validate()) return;
 
@@ -55,8 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
         emailController.text.trim(),
         passwordController.text.trim(),
       );
-      // Setelah register, AuthController akan otomatis trigger authStateChanges
-      // dan navigasi ke HomePage
+      // AuthController akan otomatis memindahkan halaman berdasarkan role
     } catch (e) {
       errorMessage.value = e.toString();
     } finally {
@@ -109,7 +104,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     child: Column(
                       children: [
-                        // Nama
                         TextField(
                           controller: namaController,
                           decoration: InputDecoration(
@@ -124,7 +118,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Email
                         TextField(
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -140,7 +133,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Password
                         TextField(
                           controller: passwordController,
                           obscureText: true,
@@ -156,10 +148,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Error message
                         Obx(() {
-                          if (errorMessage.value == null)
-                            return const SizedBox.shrink();
+                          if (errorMessage.value == null) return const SizedBox.shrink();
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Text(
@@ -169,7 +159,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           );
                         }),
                         const SizedBox(height: 8),
-                        // Register button
                         Obx(() {
                           return SizedBox(
                             width: double.infinity,
@@ -177,27 +166,21 @@ class _RegisterPageState extends State<RegisterPage> {
                               onPressed: isLoading.value ? null : register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF1B5E20),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
-                              child:
-                                  isLoading.value
-                                      ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                      : const Text(
-                                        'DAFTAR',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                              child: isLoading.value
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      'DAFTAR',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                             ),
                           );
                         }),
                         const SizedBox(height: 16),
-                        // Navigasi Login
                         TextButton(
                           onPressed: () => Get.back(),
                           child: const Text(

@@ -195,7 +195,7 @@ class _HomePageState extends State<HomePage> {
     return FutureBuilder<Map<String, dynamic>?>(
       future: _authController.getUserData(),
       builder: (context, snapshot) {
-        String name = snapshot.data?['name'] ?? "petani";
+        String name = snapshot.data?['name'] ?? ".";
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
