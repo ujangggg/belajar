@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LahanModel {
   final String id;
-  final String uid; 
+  final String uid;
   final String namaLahan;
   final String lokasi;
   final double luas;
@@ -26,11 +26,11 @@ class LahanModel {
   });
 
   factory LahanModel.fromMap(String id, Map<String, dynamic> map) {
-    // Fungsi internal untuk konversi tanggal yang tangguh
-    DateTime parseDate(dynamic date) {
-      if (date == null) return DateTime.now();
-      if (date is Timestamp) return date.toDate();
-      if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
+    // Fungsi pembantu untuk handle tanggal yang fleksibel
+    DateTime parseTanggal(dynamic dateData) {
+      if (dateData == null) return DateTime.now();
+      if (dateData is Timestamp) return dateData.toDate(); // Jika tipe Firebase Timestamp
+      if (dateData is String) return DateTime.tryParse(dateData) ?? DateTime.now(); // Jika tipe String
       return DateTime.now();
     }
 
@@ -41,7 +41,7 @@ class LahanModel {
       lokasi: map['lokasi'] ?? '-',
       luas: (map['luas'] ?? 0).toDouble(),
       varietas: map['varietas'] ?? '-',
-      tanggalTanam: parseDate(map['tanggalTanam']),
+      tanggalTanam: parseTanggal(map['tanggalTanam']),
       status: map['status'] ?? 'aktif',
       jenisTanah: map['jenisTanah'] ?? 'Lempung',
       idSensor: map['idSensor'],
@@ -55,10 +55,23 @@ class LahanModel {
       'lokasi': lokasi,
       'luas': luas,
       'varietas': varietas,
-      'tanggalTanam': Timestamp.fromDate(tanggalTanam), // Simpan sebagai Timestamp
+      // Lebih disarankan simpan sebagai Timestamp agar mudah di-query di Firebase
+      'tanggalTanam': Timestamp.fromDate(tanggalTanam), 
       'status': status,
       'jenisTanah': jenisTanah,
       'idSensor': idSensor,
     };
+  }
+
+  int get usiaBulan {
+    final diff = DateTime.now().difference(tanggalTanam).inDays;
+    return (diff / 30).floor();
+  }
+
+  String get fasePertumbuhan {
+    int bulan = usiaBulan;
+    if (bulan <= 4) return "Fase Awal (0-4 bln)";
+    if (bulan <= 9) return "Fase Pertumbuhan";
+    return "Fase Kemasakan (Kritis Rendemen)";
   }
 }

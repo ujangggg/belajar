@@ -1,3 +1,6 @@
+import 'package:absen01/admin/widgets/irigasi_admin.dart';
+import 'package:absen01/admin/widgets/lahan_admin.dart';
+import 'package:absen01/admin/widgets/list_petani.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,7 +46,9 @@ class AdminPage extends StatelessWidget {
                         ),
                         Text(
                           "Kelola ekosistem SITEBU",
-                          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
                         ),
                       ],
                     ),
@@ -58,7 +63,8 @@ class AdminPage extends StatelessWidget {
                           // Dialog Konfirmasi Logout
                           Get.defaultDialog(
                             title: "Konfirmasi Keluar",
-                            middleText: "Apakah Anda yakin ingin keluar dari Admin Panel?",
+                            middleText:
+                                "Apakah Anda yakin ingin keluar dari Admin Panel?",
                             textConfirm: "Ya, Keluar",
                             textCancel: "Batal",
                             confirmTextColor: Colors.white,
@@ -109,29 +115,43 @@ class AdminPage extends StatelessWidget {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
-                            _buildStatCard(
-                              title: "Total Petani",
-                              collection: "users",
-                              icon: Icons.people,
-                              color: Colors.blue,
+                            InkWell(
+                              onTap: () => Get.to(() => const UserListPage()),
+                              child: _buildStatCard(
+                                title: "Total Petani",
+                                collection: "users",
+                                icon: Icons.people,
+                                color: Colors.blue,
+                              ),
                             ),
-                            _buildStatCard(
-                              title: "Total Lahan",
-                              collection: "lahan",
-                              icon: Icons.landscape,
-                              color: Colors.green,
+                            InkWell(
+                              onTap: () => Get.to(() => const AdminLahanPage()),
+                              child: _buildStatCard(
+                                title: "Total Lahan",
+                                collection: "lahan",
+                                icon: Icons.landscape,
+                                color: Colors.green,
+                              ),
                             ),
-                            _buildStatCard(
-                              title: "Laporan Masuk",
-                              collection: "laporan",
-                              icon: Icons.assignment,
-                              color: Colors.orange,
+                            InkWell(
+                              onTap:
+                                  () => Get.to(() => const AdminIrigasiPage()),
+                              child: _buildStatCard(
+                                title: "Aktivitas Pupuk",
+                                collection: "Pupuk",
+                                icon: Icons.assignment,
+                                color: Colors.orange,
+                              ),
                             ),
-                            _buildStatCard(
-                              title: "Aktivitas Air",
-                              collection: "irigasi",
-                              icon: Icons.water_drop,
-                              color: Colors.cyan,
+                            InkWell(
+                              onTap:
+                                  () => Get.to(() => const AdminIrigasiPage()),
+                              child: _buildStatCard(
+                                title: "Aktivitas Air",
+                                collection: "irigasi",
+                                icon: Icons.water_drop,
+                                color: Colors.cyan,
+                              ),
                             ),
                           ],
                         ),
@@ -178,11 +198,17 @@ class AdminPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({required String title, required String collection, required IconData icon, required Color color}) {
+  Widget _buildStatCard({
+    required String title,
+    required String collection,
+    required IconData icon,
+    required Color color,
+  }) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection(collection).snapshots(),
       builder: (context, snapshot) {
-        String count = snapshot.hasData ? snapshot.data!.docs.length.toString() : "...";
+        String count =
+            snapshot.hasData ? snapshot.data!.docs.length.toString() : "...";
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -193,7 +219,7 @@ class AdminPage extends StatelessWidget {
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -210,7 +236,10 @@ class AdminPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 count,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 title,
@@ -224,17 +253,19 @@ class AdminPage extends StatelessWidget {
     );
   }
 
-  Widget _buildAdminMenu({required String title, required String subtitle, required IconData icon, required VoidCallback onTap}) {
+  Widget _buildAdminMenu({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
         ],
       ),
       child: ListTile(
@@ -250,10 +281,7 @@ class AdminPage extends StatelessWidget {
           title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(fontSize: 12),
-        ),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         trailing: const Icon(Icons.arrow_forward_ios, size: 14),
         onTap: onTap,
       ),

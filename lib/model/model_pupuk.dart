@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PupukModel {
   String id;
-  String uid; // TAMBAHAN: Identitas pemilik data
+  String uid;          // Identitas pemilik data
   String lahanId;
   DateTime tanggal;
   String jenisPupuk; 
@@ -10,10 +10,13 @@ class PupukModel {
   String metode;     
   String faseTanam;  
   String catatan;
+  
+  // --- FIELD TAMBAHAN UNTUK AKURASI (Agar tidak error merah di UI) ---
+  String? kondisiTanah; 
 
   PupukModel({
     required this.id,
-    required this.uid, // Required baru
+    required this.uid,
     required this.lahanId,
     required this.tanggal,
     required this.jenisPupuk,
@@ -21,12 +24,13 @@ class PupukModel {
     required this.metode,
     required this.faseTanam,
     this.catatan = '',
+    this.kondisiTanah, // Tambahkan di constructor
   });
 
   factory PupukModel.fromMap(String id, Map<String, dynamic> data) {
     return PupukModel(
       id: id,
-      uid: data['uid'] ?? '', // Ambil UID dari Firestore
+      uid: data['uid'] ?? '', 
       lahanId: data['lahanId'] ?? '',
       tanggal: data['tanggal'] != null 
           ? (data['tanggal'] as Timestamp).toDate() 
@@ -36,12 +40,13 @@ class PupukModel {
       metode: data['metode'] ?? '-',
       faseTanam: data['faseTanam'] ?? '-',
       catatan: data['catatan'] ?? '',
+      kondisiTanah: data['kondisiTanah'] ?? 'Normal', // Ambil data kondisi tanah
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'uid': uid, // Simpan UID
+      'uid': uid, 
       'lahanId': lahanId,
       'tanggal': Timestamp.fromDate(tanggal),
       'jenisPupuk': jenisPupuk,
@@ -49,6 +54,7 @@ class PupukModel {
       'metode': metode,
       'faseTanam': faseTanam,
       'catatan': catatan,
+      'kondisiTanah': kondisiTanah, // Simpan ke Firestore
     };
   }
 }

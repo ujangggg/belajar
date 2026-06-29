@@ -4,14 +4,13 @@ plugins {
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.absen01"
+    namespace = "com.SITEBU.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -22,21 +21,33 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
-   defaultConfig {
-    applicationId = "com.example.absen01"
+    defaultConfig {
+        applicationId = "com.SITEBU.app"
+        minSdk = 23
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
 
-    minSdk = 23
-    targetSdk = flutter.targetSdkVersion
-
-    versionCode = flutter.versionCode
-    versionName = flutter.versionName
-}
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:/Users/LENOVO/upload-keystore.jks")
+            storePassword = "UploadPass2026"
+            keyAlias = "upload"
+            keyPassword = "UploadPass2026"
+        }
+    }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

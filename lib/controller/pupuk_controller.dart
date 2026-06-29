@@ -18,45 +18,46 @@ class PupukController extends GetxController {
     isLoading.value = true;
     _db
         .collection('pemupukan')
-        .where('uid', isEqualTo: currentUid) // FILTER PER USER
+        .where('uid', isEqualTo: currentUid)
         .where('lahanId', isEqualTo: lahanId)
         .orderBy('tanggal', descending: true)
         .snapshots()
         .listen(
-      (snapshot) {
-        pupukList.value = snapshot.docs
-            .map((doc) => PupukModel.fromMap(doc.id, doc.data()))
-            .toList();
-        isLoading.value = false;
-      },
-      onError: (error) {
-        isLoading.value = false;
-        Get.snackbar("Error", "Gagal mengambil data: $error",
-            backgroundColor: Colors.red, colorText: Colors.white);
-      },
-    );
+          (snapshot) {
+            pupukList.value =
+                snapshot.docs
+                    .map((doc) => PupukModel.fromMap(doc.id, doc.data()))
+                    .toList();
+            isLoading.value = false;
+          },
+          onError: (error) {
+            isLoading.value = false;
+            // Menggunakan debugPrint agar tidak mengganggu antrean UI/Snackbar saat pertama kali setup index
+            debugPrint("Firestore Error di fetchPupukByLahan: $error");
+          },
+        );
   }
 
+  // BERHASIL DIPERBAIKI: Bersih dari snackbar sukses & melempar error ke UI
   Future<void> addPupuk(PupukModel pupuk) async {
     try {
       await _db.collection('pemupukan').add(pupuk.toMap());
-      Get.snackbar(
-        "Berhasil",
-        "Data pemupukan ${pupuk.jenisPupuk} dicatat",
-        backgroundColor: const Color(0xFF1B5E20),
-        colorText: Colors.white,
-      );
     } catch (e) {
-      Get.snackbar("Gagal", e.toString(), backgroundColor: Colors.red);
+      // Wajib di-throw agar try-catch di halaman AddPemupukan tahu kalau ini gagal
+      throw Exception(e.toString());
     }
   }
 
   Future<void> deletePupuk(String id) async {
     try {
       await _db.collection('pemupukan').doc(id).delete();
-      Get.snackbar("Dihapus", "Data pemupukan telah dihapus", backgroundColor: Colors.orange);
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }
